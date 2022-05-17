@@ -5,7 +5,7 @@ using UnityEngine;
 public class DragController : MonoBehaviour
 {
     static private DragController controller = null;
-    private bool isOneDragable = false;
+    private DragAndDrop dragger = null;
 
     private void Awake()
     {
@@ -19,21 +19,26 @@ public class DragController : MonoBehaviour
         }
     }
 
-    public void Register()
+    public void Register(DragAndDrop dragger)
     {
         //Debug.Log("resigter");
-        isOneDragable = true;
+        this.dragger = dragger;
     }
 
     public void Remove()
     {
         //Debug.Log("remove");
-        isOneDragable = false;
+        dragger = null;
     }
 
     public bool IsDraggable()
     {
-        return isOneDragable == false;
+        return dragger == null;
+    }
+
+    public bool IsThisDraggable(DragAndDrop other)
+    {
+        return dragger == other;
     }
 
     static public DragController Instantiate()

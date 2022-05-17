@@ -14,7 +14,7 @@ public class DragAndDrop : MonoBehaviour
 
     private DragController controller = null;
     private new Camera camera;
-    private Card card = null;
+    private CardEntry cardEntry = null;
 
     // Start is called before the first frame update
     void Start()
@@ -22,16 +22,28 @@ public class DragAndDrop : MonoBehaviour
         //Debug.Log("start");
         controller = DragController.Instantiate();
         camera = Camera.main;
-        card = gameObject.GetComponent<Card>();
+        cardEntry = gameObject.GetComponent<CardEntry>();
     }
 
     void OnMouseEnter()
     {
-        // Debug.Log("enter");
+        //Debug.Log("mouse enter");
         if(controller.IsDraggable())
         {
-            controller.Register();
+            controller.Register(this);
             isDragable = true;
+        }
+    }
+
+    private void OnMouseExit()
+    {
+        if (isDragging)
+            return;
+
+        if (controller.IsThisDraggable(this))
+        {
+            controller.Remove();
+            isDragable = false;
         }
     }
 
@@ -44,29 +56,30 @@ public class DragAndDrop : MonoBehaviour
         if (isDragging && Input.GetMouseButtonUp(0))
         {
             isDragging = false;
-            drop();
+            Drop();
             return;
         }
 
         if (isDragging && Input.GetMouseButton(0))
         {
-            drag();
+            Drag();
         } 
         else if(Input.GetMouseButton(0))
         {
             isDragging = true;
             // init drag
             offset = transform.position - mousePosition();
-            drag();
+            Drag();
         }
     }
 
-    private void drag()
+    private void Drag()
     {
         Vector3 parentPosition = mousePosition() + offset;
+        parentPosition.z = -1.0f;
         transform.position = parentPosition;
 
-        Card workingCard = card.GetNext();
+        CardEntry workingCard = cardEntry.GetNext();
         for(;workingCard != null; workingCard = workingCard.GetNext())
         {
             parentPosition += new Vector3(0, -yOffset, -0.01f);
@@ -74,12 +87,10 @@ public class DragAndDrop : MonoBehaviour
         }
     }
 
-    private void drop()
+    private void Drop()
     {
         //Debug.Log("drop");
-        isDragable = false;
-        controller.Remove();
-        card.DropHandler();
+        cardEntry.DropHandler();
     }
 
     private Vector3 mousePosition()

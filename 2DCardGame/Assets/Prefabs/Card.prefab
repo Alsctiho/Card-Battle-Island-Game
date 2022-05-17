@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8747529969583170670}
   - component: {fileID: 4582720855916492173}
   - component: {fileID: 203503898620471859}
+  - component: {fileID: 8402010926032359839}
   - component: {fileID: 4582720855916492174}
   m_Layer: 0
   m_Name: Card
@@ -31,6 +32,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.0597833, y: 2.1195645, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -46,6 +48,7 @@ SpriteRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -148,6 +151,21 @@ MonoBehaviour:
   cardName: 
   cardType: 0
   description: 
+--- !u!114 &8402010926032359839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4582720855916492163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3ecae8cb20a7584bb6c4d7f362a6d3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardCollection: {fileID: 0}
+  prev: {fileID: 0}
+  next: {fileID: 0}
 --- !u!114 &4582720855916492174
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,3 +178,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4edbd922ebc49e44b989d56984acd84c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isDragging: 0
+  offset: {x: 0, y: 0, z: 0}
