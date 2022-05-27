@@ -18,6 +18,7 @@ public class Draggable : MonoBehaviour
 
         parentPosition.z = Card.cardHoldingZOffset;
         cardEntry.DragHandler(parentPosition);
+
     }
 
     public void Drop(Vector3 mousePosition)
@@ -25,5 +26,7 @@ public class Draggable : MonoBehaviour
         //Debug.Log("drop");
         isDragging = false;
         cardEntry.DropHandler(mousePosition);
+
+        AudioManager.Play("cardplace");
     }
 }
