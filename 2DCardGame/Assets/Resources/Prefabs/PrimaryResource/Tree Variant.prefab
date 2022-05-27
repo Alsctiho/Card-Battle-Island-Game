@@ -92,6 +92,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9187239895472407434, guid: dd13e15b66e93784aa55fd85fc06a08c, type: 3}
+      propertyPath: faceUp
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9187239895472407434, guid: dd13e15b66e93784aa55fd85fc06a08c, type: 3}
       propertyPath: cardName
       value: Tree
       objectReference: {fileID: 0}

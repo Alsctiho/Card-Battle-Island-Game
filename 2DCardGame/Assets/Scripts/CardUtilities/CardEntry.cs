@@ -12,17 +12,14 @@ enum CollectionActionState
 
 public class CardEntry : MonoBehaviour
 {
-    public CardCollection cardCollection = null;
+    [HideInInspector] public CardCollection cardCollection = null;
     private CardFactory cardFactory = null;
-
-    private CardEntry thisCard;
     private CardEntry otherCard;
 
     // Doubly linked list to store the card relationship.
 
     private void Start()
     {
-        thisCard = this;
         if(cardCollection == null)
         {
             cardCollection = ScriptableObject.CreateInstance("CardCollection") as CardCollection;
@@ -129,10 +126,10 @@ public class CardEntry : MonoBehaviour
 
     private void MergeCollections()
     {
-        if(thisCard.cardCollection.Head() != thisCard)
+        if(cardCollection.Head() != this)
         {
             //First split.
-            thisCard.SplitCollections();
+            SplitCollections();
         }
 
         // Then merge.

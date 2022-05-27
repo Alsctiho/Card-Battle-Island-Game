@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CardCollection : ScriptableObject
 {
-    public LinkedList<CardEntry> cardEntryList;
+    [HideInInspector] public LinkedList<CardEntry> cardEntryList;
 
     public void Awake()
     {
@@ -86,7 +86,6 @@ public class CardCollection : ScriptableObject
             if (target == cardEntry)
                 return true;
         }
-
         throw new System.Exception("No found");
     }
 

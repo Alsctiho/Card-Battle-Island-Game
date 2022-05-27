@@ -5,10 +5,10 @@ using UnityEngine;
 [System.Serializable]
 public class CardRecipe
 {
-    [SerializeField] public List<Cards> workers;
-    [SerializeField] public List<Cards> consumables;
-    [SerializeField] public List<Cards> products;
-    [SerializeField] public float timeRequired;
+    public List<Cards> workers;
+    public List<Cards> consumables;
+    public List<Cards> products;
+    public float timeRequired;
 
     private string sourceStr = null;
 
