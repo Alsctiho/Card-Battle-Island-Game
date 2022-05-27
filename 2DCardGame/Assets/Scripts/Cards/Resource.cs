@@ -2,17 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Resource : Card
+public class Resource: CardBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public override bool CanBeConsumedBySpawn()
     {
-        
+        return true;
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void ConsumedBySpawn()
     {
-        
+        Debug.Log("Consumed resource");
+        Destroy(this.gameObject);
     }
 }

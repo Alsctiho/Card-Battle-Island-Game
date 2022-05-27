@@ -4,44 +4,49 @@ using UnityEngine;
 
 public class CardCollection : ScriptableObject
 {
-    private List<string> cardstrings;
-
-    private CardEntry head = null;
-    private CardEntry tail = null;
-    private int Size
-    {
-        get
-        {
-            return cardstrings.Count;
-        }
-    }
+    public LinkedList<CardEntry> cardEntryList;
 
     public void Awake()
     {
-        cardstrings = new List<string>();
+        cardEntryList = new();
     }
 
-    /**
-     * Insert the first card, and set up the Head and the Tail of this Collection.
-     */
-    public void Initialize(CardEntry firstcard)
+    public void TimerHandler()
     {
-        SetHeadCard(firstcard);
-        SetTailCard(firstcard);
 
-        cardstrings.Add(firstcard.ToString());
-        firstcard.cardCollection = this;
+    }
+
+    public void SpawnHandler(List<CardEntry> removedCards, List<CardEntry> newcards)
+    {
+        Vector3 headPosition = Head().transform.position;
+
+        foreach(CardEntry removedCard in removedCards)
+        {
+            if(removedCard.gameObject.GetComponent<Card>().CanBeConsumedBySpawn())
+            {
+                Remove(removedCard);
+            }
+            removedCard.gameObject.GetComponent<Card>().ConsumedBySpawn();
+        }
+
+        foreach(CardEntry newcard in newcards)
+        {
+            Register(newcard);
+        }
+
+        UpdateCardsPosition(Head(), headPosition);
     }
 
     public void Register(CardEntry newcard)
     {
-        cardstrings.Add(newcard.ToString());
-
-        //Debug.Log("update tail");
-        tail.next = newcard;
-        newcard.prev = tail;
-        SetTailCard(newcard);
+        cardEntryList.AddLast(newcard);
         newcard.cardCollection = this;
+    }
+
+    public void Remove(CardEntry oldcard)
+    {
+        cardEntryList.Remove(oldcard);
+        oldcard.cardCollection = null;
     }
 
     public void Register(CardCollection collection)
@@ -49,60 +54,90 @@ public class CardCollection : ScriptableObject
         if (this == collection)
             return;
 
-        for (CardEntry workingCard = collection.GetHeadCard(); workingCard != null; workingCard = workingCard.GetNext())
+        foreach(CardEntry cardEntry in collection.cardEntryList)
         {
-            Register(workingCard);
+            Register(cardEntry);
         }
     }
 
-
-    public void Remove(CardEntry removedcard)
+    // Remove all cards start from newcard.
+    public void RemoveAndRegisterCards(CardEntry removedcard)
     {
-        if (tail == removedcard)
-            tail = removedcard.prev;
+        LinkedList<CardEntry> otherCardList = removedcard.cardCollection.cardEntryList;
+        LinkedListNode <CardEntry> workingNode = otherCardList.Find(removedcard);
 
-        if(removedcard.prev)
-            removedcard.prev.next = removedcard.next;
-
-        if(removedcard.next)
-            removedcard.next.prev = removedcard.prev;
-
-        cardstrings.Remove(removedcard.ToString());
-
-        removedcard.next = null;
-        removedcard.prev = null;
-        removedcard.cardCollection = null;
+        while(workingNode != null)
+        {
+            LinkedListNode<CardEntry> temp = workingNode.Next;
+            CardEntry cardEntry = workingNode.Value;
+            otherCardList.Remove(cardEntry);
+            this.Register(cardEntry);
+            workingNode = temp;
+        }
     }
 
-    public void SetHeadCard(CardEntry header)
+    public bool ExistsBeforeThisCard(CardEntry target, CardEntry threshold)
     {
-        this.head = header;
+        foreach(CardEntry cardEntry in cardEntryList)
+        {
+            if (cardEntry == threshold)
+                return false;
+
+            if (target == cardEntry)
+                return true;
+        }
+
+        throw new System.Exception("No found");
     }
 
-    public CardEntry GetHeadCard()
+    public void UpdateCardsPosition(CardEntry target, Vector3 targetPosition)
     {
-        return head;
+        LinkedListNode<CardEntry> workingNode = cardEntryList.Find(target);
+        Vector3 workingPosition = targetPosition;
+
+        while(workingNode != null)
+        {
+            workingNode.Value.transform.position = workingPosition;
+            workingNode = workingNode.Next;
+            workingPosition += Card.cardPositionOffset;
+        }
     }
 
-    public void SetTailCard(CardEntry tail)
+    public Card FindFirstByCardType(Cards cardType)
     {
-        this.tail = tail;
+        foreach(CardEntry cardEntry in cardEntryList)
+        {
+            Card workingCard = cardEntry.gameObject.GetComponent<Card>();
+            if (workingCard.cardType == cardType)
+            {
+                return workingCard;
+            }
+        }
+        throw new System.Exception("Card Type cannot find");
     }
 
-    public CardEntry GetTailCard()
+    public CardEntry Head()
     {
-        return tail;
+        return cardEntryList.First.Value;
+    }
+
+    public CardEntry Last()
+    {
+        return cardEntryList.Last.Value;
     }
 
     public override string ToString()
     {
-        List<string> temp = new List<string>(cardstrings);
-        temp.Sort();
+        List<string> strings = new();
+        foreach(CardEntry entry in cardEntryList)
+        {
+            strings.Add(entry.gameObject.GetComponent<Card>().cardType.ToString());
+        }
+        strings.Sort();
         string cardNames = "";
-        for (int i = 0; i < temp.Count - 1; ++i)
-            cardNames += temp[i] + "+";
-
-        cardNames += temp[temp.Count - 1];
+        for (int i = 0; i < strings.Count - 1; ++i)
+            cardNames += strings[i] + "+";
+        cardNames += strings[^1];
         return cardNames;
     }
 }

@@ -4,18 +4,18 @@ using UnityEngine;
 
 public class test : MonoBehaviour
 {
-    private static GameObject cardPrefab = null;
-    private static bool mylock = true;
+    private GameObject cardPrefab = null;
+    private bool mylock = true;
 
     private void Awake()
     {
-        cardPrefab = Resources.Load("Card") as GameObject;
+        //cardPrefab = Resources.Load("Prefabs/SecondaryResource/Iron Variant") as GameObject;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-
+        //GameObject cardObject = GameObject.Instantiate(cardPrefab);
     }
 
     // Update is called once per frame

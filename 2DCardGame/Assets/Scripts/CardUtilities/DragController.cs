@@ -5,44 +5,69 @@ using UnityEngine;
 public class DragController : MonoBehaviour
 {
     static private DragController controller = null;
-    private DragAndDrop dragger = null;
+    private bool isDragActive = false;
+
+    private Vector3 offset;
+    private Vector3 worldPosition; // mouse position in world space.
+    private Draggable lastDraggable = null;
 
     private void Awake()
     {
-        if(controller && controller != this)
+        if (controller && controller != this)
         {
             Destroy(this.gameObject);
-        } 
+        }
         else
         {
             controller = this;
         }
     }
 
-    public void Register(DragAndDrop dragger)
+    private void Update()
     {
-        //Debug.Log("resigter");
-        this.dragger = dragger;
+        if(isDragActive && Input.GetMouseButtonUp(0))
+        {
+            Drop();
+            return;
+        }
+
+        if (!Input.GetMouseButton(0))
+            return;
+
+        worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        if (isDragActive)
+            Drag();
+        else
+        {
+            RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
+            if(hit.collider)
+            {
+                Draggable draggable = hit.transform.gameObject.GetComponent<Draggable>();
+                if(draggable)
+                {
+                    lastDraggable = draggable;
+                    InitDrag();
+                }
+            }
+        }
     }
 
-    public void Remove()
+    private void InitDrag()
     {
-        //Debug.Log("remove");
-        dragger = null;
+        isDragActive = true;
+        offset = lastDraggable.transform.position - worldPosition;
     }
 
-    public bool IsDraggable()
+    private void Drag()
     {
-        return dragger == null;
+        Vector3 newPosition = worldPosition + offset;
+        lastDraggable.Drag(newPosition);
     }
 
-    public bool IsThisDraggable(DragAndDrop other)
+    private void Drop()
     {
-        return dragger == other;
-    }
-
-    static public DragController Instantiate()
-    {
-        return controller;
+        isDragActive = false;
+        lastDraggable.Drop(worldPosition);
     }
 }

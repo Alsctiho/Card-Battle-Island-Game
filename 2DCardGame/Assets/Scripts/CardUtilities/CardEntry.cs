@@ -2,136 +2,172 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+enum CollectionActionState
+{
+    Merge,
+    Split,
+    Move,
+    PutBack,
+}
+
 public class CardEntry : MonoBehaviour
 {
     public CardCollection cardCollection = null;
-    private DragAndDrop dragger = null;
+    private CardFactory cardFactory = null;
 
-    // other card keep track of the 
-    private CardEntry otherCard = null;
-    private bool needSplit = false;
+    private CardEntry thisCard;
+    private CardEntry otherCard;
 
     // Doubly linked list to store the card relationship.
-    public CardEntry prev = null;
-    public CardEntry next = null;
 
     private void Start()
     {
-        dragger = this.gameObject.GetComponent<DragAndDrop>();
-        cardCollection = ScriptableObject.CreateInstance("CardCollection") as CardCollection;
-        cardCollection.Initialize(this);
-    }
-
-    public void OnTriggerEnter2D(Collider2D other)
-    {
-        if (dragger.isDragging == false)
-            return;
-        //this.cardCollection = ScriptableObject.CreateInstance("CardCollection") as CardCollection;
-        //cardCollection.Register(this);
-        otherCard = other.gameObject.GetComponent<CardEntry>();
-    }
-
-    public void OnTriggerExit2D(Collider2D other)
-    {
-        if (dragger.isDragging == false)
-            return;
-
-        if (other.gameObject.GetComponent<CardEntry>() == otherCard)
+        thisCard = this;
+        if(cardCollection == null)
         {
-            otherCard = null;
-            needSplit = true;
+            cardCollection = ScriptableObject.CreateInstance("CardCollection") as CardCollection;
+            cardCollection.Register(this);
         }
+        cardFactory = CardFactory.GetInstance();
     }
 
-    public void DropHandler()
+    public void DragHandler(Vector3 parentPosition)
     {
-        if (needSplit && otherCard)
-            SplitAndMergeCollections();
-        else if (needSplit)
-            SplitCollections();
-        else if (otherCard)
-            MergeCollections();
+        cardFactory.PauseSpawnCard(cardCollection);
+        cardCollection.UpdateCardsPosition(this, parentPosition);
+    }
+
+    public void DropHandler(Vector3 mousePosition)
+    {
+        RaycastHit2D[] hits = Physics2D.BoxCastAll(mousePosition, Card.dimensions, 0.0f, new Vector2(0.0f, 0.0f));
+        CollectionActionState state;
+        bool needPutBack = false;
+        bool continueChecking = true;
+        otherCard = null;
+
+        foreach(RaycastHit2D hit in hits)
+        {
+            CardEntry temp = hit.transform.gameObject.GetComponent<CardEntry>();
+            if (temp && temp.cardCollection != this.cardCollection)
+            {
+                continueChecking = false;
+                otherCard = hit.transform.gameObject.GetComponent<CardEntry>();
+                break;
+            }
+            else
+            {
+                if (needPutBack)
+                    continue;
+
+                if(temp && ExistsInPrevs(temp))
+                {
+                    needPutBack = true;
+                    continue;
+                }
+            }
+        }
+        
+        if(continueChecking)
+        {
+            if (needPutBack)
+            {
+                state = CollectionActionState.PutBack;
+            }
+            else if(cardCollection.Head() == this)
+            {
+                state = CollectionActionState.Move;
+            }
+            else
+            {
+                state = CollectionActionState.Split;
+            }
+        }
         else
-            MoveCollections();
-    }
-
-    private void SplitAndMergeCollections()
-    {
-        for (CardEntry workingCard = this; workingCard; workingCard = workingCard.next)
         {
-            cardCollection.Remove(workingCard);
-            otherCard.cardCollection.Register(workingCard);
+            state = CollectionActionState.Merge;
         }
 
-        Vector3 newPosition = prev.transform.position + new Vector3(0.0f, -0.4f, -0.01f);
-        UpdateCollectionPosition(newPosition);
+        switch(state)
+        {
+            case CollectionActionState.Merge:
+                cardFactory.ClearCollection(cardCollection);
+                cardFactory.ClearCollection(otherCard.cardCollection);
+                MergeCollections();
+                cardFactory.RequestSpawnCard(cardCollection); // Here is the new cardcollection.
+                break;
 
-        needSplit = false;
+            case CollectionActionState.Move:
+                MoveCollections();
+                cardFactory.RequestSpawnCard(cardCollection);
+                break;
+
+            case CollectionActionState.PutBack:
+                PutBackCollections();
+                cardFactory.RequestSpawnCard(cardCollection);
+                break;
+
+            case CollectionActionState.Split:
+                CardCollection oldCollection = cardCollection;
+                cardFactory.ClearCollection(oldCollection);
+                SplitCollections();
+                cardFactory.RequestSpawnCard(cardCollection); // Here is the new cardcollection
+                cardFactory.RequestSpawnCard(oldCollection);
+                break;
+        }
+    }
+
+    private bool ExistsInPrevs(CardEntry other)
+    {
+        return cardCollection.ExistsBeforeThisCard(other, this);
+    }
+
+    private void PutBackCollections()
+    {
+        Vector3 newPosition = GetPrev().transform.position + Card.cardPositionOffset;
+        cardCollection.UpdateCardsPosition(this, newPosition);
     }
 
     private void MergeCollections()
     {
+        if(thisCard.cardCollection.Head() != thisCard)
+        {
+            //First split.
+            thisCard.SplitCollections();
+        }
+
+        // Then merge.
         CardCollection otherCollection = otherCard.cardCollection;
 
         //Move all cards in this collection to new collection.
         otherCollection.Register(this.cardCollection);
 
         // Update cards' positions.
-        if (prev == null)
+        if (GetPrev() == null)
             throw new System.Exception("previous node is null");
 
-        Vector3 newPosition = prev.transform.position + new Vector3(0.0f, -0.4f, -0.01f);
-        UpdateCollectionPosition(newPosition);
+        Vector3 newPosition = GetPrev().transform.position + Card.cardPositionOffset;
+        cardCollection.UpdateCardsPosition(this, newPosition);
     }
 
     private void SplitCollections()
     {
         CardCollection newCollection = ScriptableObject.CreateInstance("CardCollection") as CardCollection;
-        cardCollection.Remove(this);
-        newCollection.Initialize(this);
-
-        for (CardEntry workingCard = this.next; workingCard; workingCard = workingCard.next)
-        {
-            cardCollection.Remove(workingCard);
-            newCollection.Register(workingCard);
-        }
-
-        UpdateCollectionPosition(new Vector3(transform.position.x, transform.position.y, -0.1f));
-
-        needSplit = false;
+        newCollection.RemoveAndRegisterCards(this);
+        cardCollection.UpdateCardsPosition(this, new Vector3(transform.position.x, transform.position.y, Card.cardDropZOffset));
     }
 
     private void MoveCollections()
-    {
-        //Debug.Log("Moving");
-        UpdateCollectionPosition(new Vector3(transform.position.x, transform.position.y, -0.1f));
+    { 
+        cardCollection.UpdateCardsPosition(this, new Vector3(transform.position.x, transform.position.y, Card.cardDropZOffset)); 
     }
 
-    private void UpdateCollectionPosition(Vector3 parentPosition)
-    {
-        for (CardEntry workingCard = this; workingCard; workingCard = workingCard.next)
-        {
-            workingCard.transform.position = parentPosition;
-            parentPosition += new Vector3(0.0f, -0.4f, -0.01f);
-        }
-    }
-
-    public void SetPrev(CardEntry newprev)
-    {
-        prev = newprev;
-    }
     public CardEntry GetPrev()
     {
-        return prev;
-    }
-
-    public void SetNext(CardEntry newnext)
-    {
-        next = newnext;
+        return cardCollection.cardEntryList.Find(this).Previous.Value;
     }
 
     public CardEntry GetNext()
     {
-        return next;
+        return cardCollection.cardEntryList.Find(this).Next.Value;
     }
 }

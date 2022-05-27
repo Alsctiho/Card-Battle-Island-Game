@@ -4,15 +4,13 @@ using UnityEngine;
 
 public class Minions : Battleable
 {
-    // Start is called before the first frame update
-    void Start()
+    public override bool CanBeConsumedBySpawn()
     {
-        
+        return false;
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void ConsumedBySpawn()
     {
-        
+        return;
     }
 }

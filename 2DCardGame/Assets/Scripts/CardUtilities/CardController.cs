@@ -4,16 +4,23 @@ using UnityEngine;
 
 public enum Cards
 {
-    A, B, C
+    Tree,
+    IronOre,
+    MagicOre,
+    Wood,
+    Iron,
+    MagicStone,
+    Villager,
 }
 
 
 public class CardController : MonoBehaviour
 {
-    static private CardController controller = null;
+    private static CardController controller = null;
 
     /* Recipes are given from Editor. */
-    [SerializeField] private List<CardRecipes> recipes;
+    public List<CardRecipe> recipes;
+    public List<PrefabPath> paths;
 
     private void Awake()
     {
@@ -24,16 +31,15 @@ public class CardController : MonoBehaviour
         else
         {
             controller = this;
-            CardFactory.SetCardController(controller);
         }
     }
 
-    public List<CardRecipes> GetCardRecipes()
+    public List<CardRecipe> GetCardRecipes()
     {
         return recipes;
     }
 
-    public static CardController Instantiate()
+    public static CardController GetInstance()
     {
         return controller;
     }
