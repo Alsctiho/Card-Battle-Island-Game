@@ -4,31 +4,37 @@ using UnityEngine;
 
 public class Card : MonoBehaviour
 {
-    public Cards cardType;
-    public bool IsPlayer;
-    [TextArea(5, 10)] [SerializeField] private string description;
+    public CardType cardType;
+    [TextArea(5, 10)] public string description;
+    public CardBehaviour cardBehaviour;
 
-    [SerializeField] private CardBehaviour cardBehaviour;
-    [HideInInspector] public static Vector2 dimensions = new (1.5f, 1.6f);
-    [HideInInspector] public static Vector3 cardPositionOffset = new (0.0f, -0.4f, -0.01f);
+    [HideInInspector] public static Vector2 dimensions = new (1.300f, 1.900f);
+    [HideInInspector] public static Vector3 cardPositionOffset = new (0.0f, -0.40f, -0.01f);
     [HideInInspector] public static float cardHoldingZOffset = -5.0f;
     [HideInInspector] public static float cardDropZOffset = -1.0f;
+    
 
     public bool faceUp = true;
 
-    public bool CanBeConsumedBySpawn()
+    public bool IsPlayer()
     {
-        if (cardBehaviour == null)
-            throw new System.Exception("You forget to update cardBehavior in prefab");
-
-        return cardBehaviour.CanBeConsumedBySpawn();
+        Battleable battleable = gameObject.GetComponent<Battleable>();
+        if (battleable)
+            return battleable.isPlayer;
+        else
+            throw new System.Exception("Not battleable");
     }
 
-    public void ConsumedBySpawn()
+    public bool IsResource()
+    {
+        return gameObject.GetComponent<Resource>();
+    }
+
+    public bool ConsumedBySpawn()
     {
         if (cardBehaviour == null)
-            throw new System.Exception("You forget to update cardBehavior in prefab");
+            throw new System.Exception("You forget to update cardBehavior in editor");
 
-        cardBehaviour.ConsumedBySpawn();
+        return cardBehaviour.ConsumedBySpawn();
     }
 }

@@ -6,6 +6,6 @@ using UnityEngine;
 [System.Serializable]
 public class PrefabPath
 {
-    [SerializeField] public Cards prefab;
+    [SerializeField] public CardType prefab;
     [SerializeField] public GameObject prefabObject;
 }

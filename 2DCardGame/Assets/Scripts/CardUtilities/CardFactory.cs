@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class CardFactory: MonoBehaviour
 {
+    public Canvas cardCanvas;
     private static CardFactory cardFactory = null;
-
     private CardController controller = null;
 
     /* store the key: string of cards and Value: dsct cards & time required. */
     private Dictionary<string, CardRecipe> graph = null;
-    private Dictionary<Cards, GameObject> paths = null;
+    private Dictionary<CardType, GameObject> paths = null;
 
     /* store the time information */
     private Dictionary<CardCollection, float> collectionTimePairs = new();
@@ -95,17 +95,29 @@ public class CardFactory: MonoBehaviour
             List<CardEntry> removingCards = new();
             List<CardEntry> spawnedTargets = new();
 
-            foreach (Cards cardType in recipe.GetConsumables())
+            foreach (CardType cardType in recipe.GetConsumables())
             {
                 Card consumable = cards.FindFirstByCardType(cardType);
                 removingCards.Add(consumable.gameObject.GetComponent<CardEntry>());
             }
 
-            foreach (Cards cardType in recipe.GetProducts())
+            foreach (CardType cardType in recipe.GetProducts())
             {
+                // Instantiate card object.
                 paths.TryGetValue(cardType, out GameObject cardPrefab);
                 GameObject cardObject = GameObject.Instantiate(cardPrefab);
                 spawnedTargets.Add(cardObject.GetComponent<CardEntry>());
+
+                // Card Transform.
+                cardObject.transform.SetParent(cardCanvas.transform, false);
+
+                // Card Properties.
+                Battleable battleable = cardObject.GetComponent<Battleable>();
+                Battleable worker = cards.FindFirstByCardType(recipe.GetWorker()[0]).gameObject.GetComponent<Battleable>();
+                if(battleable)
+                {
+                    battleable.isPlayer = worker.isPlayer;
+                }
             }
 
             cards.SpawnHandler(removingCards, spawnedTargets);
@@ -147,7 +159,7 @@ public class CardFactory: MonoBehaviour
 
         if(paths == null)
         {
-            paths = new Dictionary<Cards, GameObject>();
+            paths = new Dictionary<CardType, GameObject>();
 
             foreach(PrefabPath path in controller.paths)
             {

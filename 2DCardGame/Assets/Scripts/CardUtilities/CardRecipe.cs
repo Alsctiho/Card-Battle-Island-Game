@@ -5,20 +5,25 @@ using UnityEngine;
 [System.Serializable]
 public class CardRecipe
 {
-    public List<Cards> workers;
-    public List<Cards> consumables;
-    public List<Cards> products;
+    public List<CardType> workers;
+    public List<CardType> consumables;
+    public List<CardType> products;
     public float timeRequired;
 
     private string sourceStr = null;
 
 
-    public List<Cards> GetConsumables()
+    public List<CardType> GetConsumables()
     {
         return consumables;
     }
 
-    public List<Cards> GetProducts()
+    public List<CardType> GetWorker()
+    {
+        return workers;
+    }
+
+    public List<CardType> GetProducts()
     {
         return products;
     }
@@ -32,8 +37,8 @@ public class CardRecipe
     {
         if(sourceStr == null)
         {
-            List<Cards> sources = new List<Cards>(consumables);
-            foreach (Cards worker in workers)
+            List<CardType> sources = new List<CardType>(consumables);
+            foreach (CardType worker in workers)
             {
                 sources.Add(worker);
             }

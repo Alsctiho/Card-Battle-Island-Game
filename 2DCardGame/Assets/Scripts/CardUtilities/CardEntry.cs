@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,8 +14,12 @@ enum CollectionActionState
 public class CardEntry : MonoBehaviour
 {
     [HideInInspector] public CardCollection cardCollection = null;
+    [HideInInspector] public Island island = null;
+
+    private Collider2D _collider;
     private CardFactory cardFactory = null;
     private CardEntry otherCard;
+    private Vector3 originalPosition;
 
     // Doubly linked list to store the card relationship.
 
@@ -25,66 +30,93 @@ public class CardEntry : MonoBehaviour
             cardCollection = ScriptableObject.CreateInstance("CardCollection") as CardCollection;
             cardCollection.Register(this);
         }
+        _collider = gameObject.GetComponent<Collider2D>();
         cardFactory = CardFactory.GetInstance();
+    }
+
+    public void InitDragHandler()
+    {
+        originalPosition = transform.position;
+        cardCollection.UpdateCardsHierarchies(this);
     }
 
     public void DragHandler(Vector3 parentPosition)
     {
         cardFactory.PauseSpawnCard(cardCollection);
-        cardCollection.UpdateCardsPosition(this, parentPosition);
+        cardCollection.UpdateCardsPositions(this, parentPosition);
     }
 
     public void DropHandler(Vector3 mousePosition)
     {
-        RaycastHit2D[] hits = Physics2D.BoxCastAll(mousePosition, Card.dimensions, 0.0f, new Vector2(0.0f, 0.0f));
+        // Collection Detection
+        RaycastHit2D[] cardHits = Physics2D.BoxCastAll(mousePosition, Card.dimensions, 0.0f, new Vector2(0.0f, 0.0f));
         CollectionActionState state;
         bool needPutBack = false;
-        bool continueChecking = true;
+        bool needMerge = false;
         otherCard = null;
 
-        foreach(RaycastHit2D hit in hits)
+        foreach(RaycastHit2D hit in cardHits)
         {
-            CardEntry temp = hit.transform.gameObject.GetComponent<CardEntry>();
-            if (temp && temp.cardCollection != this.cardCollection)
-            {
-                continueChecking = false;
-                otherCard = hit.transform.gameObject.GetComponent<CardEntry>();
-                break;
-            }
-            else
-            {
-                if (needPutBack)
-                    continue;
+            CardEntry cardEntry = hit.transform.gameObject.GetComponent<CardEntry>();
 
-                if(temp && ExistsInPrevs(temp))
+            if (cardEntry)
+            {
+                if (cardEntry.cardCollection != this.cardCollection)
                 {
-                    needPutBack = true;
-                    continue;
+                    needMerge = true;
+                    otherCard = hit.transform.gameObject.GetComponent<CardEntry>();
+                    break;
+                }
+                else
+                {
+                    if (needPutBack)
+                        continue;
+
+                    if (ExistsInPrevs(cardEntry))
+                    {
+                        needPutBack = true;
+                        continue;
+                    }
                 }
             }
         }
-        
-        if(continueChecking)
+
+        if (needPutBack)
         {
-            if (needPutBack)
-            {
-                state = CollectionActionState.PutBack;
-            }
-            else if(cardCollection.Head() == this)
-            {
-                state = CollectionActionState.Move;
-            }
-            else
-            {
-                state = CollectionActionState.Split;
-            }
+            state = CollectionActionState.PutBack;
         }
-        else
+        else if (needMerge)
         {
             state = CollectionActionState.Merge;
         }
+        else if (cardCollection.Head() == this)
+        {
+            state = CollectionActionState.Move;
+        }
+        else
+        {
+            state = CollectionActionState.Split;
+        }
 
-        switch(state)
+        // Island Detection
+        bool needPutBack1 = true;
+        RaycastHit2D[] objectHits = new RaycastHit2D[16];
+        int numberOfIslands = _collider.Cast(Vector2.zero, objectHits);
+        for(int i = 0; i < numberOfIslands; ++i)
+        {
+            Island otherIsland = objectHits[i].transform.gameObject.GetComponent<Island>();
+            if (otherIsland)
+            {
+                needPutBack1 = false;
+                List<CardEntry> nextCards = cardCollection.GetAllCardsFrom(this);
+                otherIsland.RegisterAllCards(nextCards);
+            }
+        }
+
+        if(needPutBack1)
+            state = CollectionActionState.PutBack;
+
+        switch (state)
         {
             case CollectionActionState.Merge:
                 cardFactory.ClearCollection(cardCollection);
@@ -120,8 +152,7 @@ public class CardEntry : MonoBehaviour
 
     private void PutBackCollections()
     {
-        Vector3 newPosition = GetPrev().transform.position + Card.cardPositionOffset;
-        cardCollection.UpdateCardsPosition(this, newPosition);
+        cardCollection.UpdateCardsPositions(this, originalPosition);
     }
 
     private void MergeCollections()
@@ -143,19 +174,19 @@ public class CardEntry : MonoBehaviour
             throw new System.Exception("previous node is null");
 
         Vector3 newPosition = GetPrev().transform.position + Card.cardPositionOffset;
-        cardCollection.UpdateCardsPosition(this, newPosition);
+        cardCollection.UpdateCardsPositions(this, newPosition);
     }
 
     private void SplitCollections()
     {
         CardCollection newCollection = ScriptableObject.CreateInstance("CardCollection") as CardCollection;
         newCollection.RemoveAndRegisterCards(this);
-        cardCollection.UpdateCardsPosition(this, new Vector3(transform.position.x, transform.position.y, Card.cardDropZOffset));
+        cardCollection.UpdateCardsPositions(this, new Vector3(transform.position.x, transform.position.y, Card.cardDropZOffset));
     }
 
     private void MoveCollections()
     { 
-        cardCollection.UpdateCardsPosition(this, new Vector3(transform.position.x, transform.position.y, Card.cardDropZOffset)); 
+        cardCollection.UpdateCardsPositions(this, new Vector3(transform.position.x, transform.position.y, Card.cardDropZOffset)); 
     }
 
     public CardEntry GetPrev()

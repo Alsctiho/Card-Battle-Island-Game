@@ -2,15 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Minions : Battleable
+public abstract class Minions : Battleable
 {
-    public override bool CanBeConsumedBySpawn()
+    public override bool ConsumedBySpawn()
     {
         return false;
-    }
-
-    public override void ConsumedBySpawn()
-    {
-        return;
     }
 }

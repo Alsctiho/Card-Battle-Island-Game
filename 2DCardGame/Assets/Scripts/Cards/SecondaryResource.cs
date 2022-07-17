@@ -2,17 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SecondaryResource : MonoBehaviour
+public class SecondaryResource : Resource
 {
-    // Start is called before the first frame update
-    void Start()
+    public override void Initialize(ObjectStatus status)
     {
-        
+        throw new System.Exception("Should not initilize secondary resource");
     }
 
-    // Update is called once per frame
-    void Update()
+    public override bool ConsumedBySpawn()
     {
-        
+        Debug.Log("Consumed resource");
+        Destroy(this.gameObject);
+        return true;
     }
 }

@@ -6,7 +6,7 @@ public class DragController : MonoBehaviour
 {
     static private DragController controller = null;
     private bool isDragActive = false;
-
+    
     private Vector3 offset;
     private Vector3 worldPosition; // mouse position in world space.
     private Draggable lastDraggable = null;
@@ -35,6 +35,7 @@ public class DragController : MonoBehaviour
             return;
 
         worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //worldPosition = Input.mousePosition;
 
         if (isDragActive)
             Drag();
@@ -57,6 +58,7 @@ public class DragController : MonoBehaviour
     {
         isDragActive = true;
         offset = lastDraggable.transform.position - worldPosition;
+        lastDraggable.InitDrag();
     }
 
     private void Drag()

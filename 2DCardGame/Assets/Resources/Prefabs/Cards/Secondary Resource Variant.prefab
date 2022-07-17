@@ -10,14 +10,14 @@ PrefabInstance:
     - target: {fileID: 203503898620471859, guid: 8e399c28c26dd2742888d0da6cea592f, type: 3}
       propertyPath: child
       value: 
-      objectReference: {fileID: 8301958937522595966}
+      objectReference: {fileID: 0}
     - target: {fileID: 203503898620471859, guid: 8e399c28c26dd2742888d0da6cea592f, type: 3}
       propertyPath: cardBehaviour
       value: 
-      objectReference: {fileID: 8301958937522595966}
+      objectReference: {fileID: 9019632013934969718}
     - target: {fileID: 4411419820270173621, guid: 8e399c28c26dd2742888d0da6cea592f, type: 3}
       propertyPath: m_text
-      value: Resource
+      value: Source
       objectReference: {fileID: 0}
     - target: {fileID: 4582720855916492163, guid: 8e399c28c26dd2742888d0da6cea592f, type: 3}
       propertyPath: m_Name
@@ -78,7 +78,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 4582720855916492163, guid: 8e399c28c26dd2742888d0da6cea592f, type: 3}
   m_PrefabInstance: {fileID: 2432785303465035559}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8301958937522595966
+--- !u!114 &9019632013934969718
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -87,6 +87,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2187593894500119204}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfcf2c8256a420e4586d10b4d103c443, type: 3}
+  m_Script: {fileID: 11500000, guid: c624e3de997025a4f84c1e90df12969b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

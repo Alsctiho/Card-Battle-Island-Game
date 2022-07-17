@@ -25,7 +25,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4653869064925615116, guid: dd13e15b66e93784aa55fd85fc06a08c, type: 3}
       propertyPath: m_fontSize
-      value: 26
+      value: 25.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 4653869064925615116, guid: dd13e15b66e93784aa55fd85fc06a08c, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4770516947218275381, guid: dd13e15b66e93784aa55fd85fc06a08c, type: 3}
       propertyPath: m_RootOrder

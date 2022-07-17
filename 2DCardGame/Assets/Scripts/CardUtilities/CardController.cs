@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum Cards
+public enum CardType
 {
     Tree,
     IronOre,

@@ -12,13 +12,18 @@ public class Draggable : MonoBehaviour
         cardEntry = gameObject.GetComponent<CardEntry>();
     }
 
+    public void InitDrag()
+    {
+        cardEntry.InitDragHandler();
+        AudioManager.Play("cardpickup");
+    }
+
     public void Drag(Vector3 parentPosition)
     {
         isDragging = true;
 
         parentPosition.z = Card.cardHoldingZOffset;
         cardEntry.DragHandler(parentPosition);
-
     }
 
     public void Drop(Vector3 mousePosition)

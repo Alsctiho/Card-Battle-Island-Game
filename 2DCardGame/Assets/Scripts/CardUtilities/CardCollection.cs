@@ -5,6 +5,7 @@ using UnityEngine;
 public class CardCollection : ScriptableObject
 {
     [HideInInspector] public LinkedList<CardEntry> cardEntryList;
+    [HideInInspector] public Island island = null;
 
     public void Awake()
     {
@@ -19,22 +20,25 @@ public class CardCollection : ScriptableObject
     public void SpawnHandler(List<CardEntry> removedCards, List<CardEntry> newcards)
     {
         Vector3 headPosition = Head().transform.position;
+        Island island = Head().island;
 
         foreach(CardEntry removedCard in removedCards)
         {
-            if(removedCard.gameObject.GetComponent<Card>().CanBeConsumedBySpawn())
+            if(removedCard.gameObject.GetComponent<Card>().ConsumedBySpawn())
             {
                 Remove(removedCard);
+                island.Remove(removedCard);
             }
-            removedCard.gameObject.GetComponent<Card>().ConsumedBySpawn();
         }
 
-        foreach(CardEntry newcard in newcards)
+        foreach (CardEntry newcard in newcards)
         {
             Register(newcard);
+            island.Register(newcard);
         }
 
-        UpdateCardsPosition(Head(), headPosition);
+        UpdateCardsPositions(Head(), headPosition);
+        UpdateCardsHierarchies(Head());
     }
 
     public void Register(CardEntry newcard)
@@ -89,7 +93,7 @@ public class CardCollection : ScriptableObject
         throw new System.Exception("No found");
     }
 
-    public void UpdateCardsPosition(CardEntry target, Vector3 targetPosition)
+    public void UpdateCardsPositions(CardEntry target, Vector3 targetPosition)
     {
         LinkedListNode<CardEntry> workingNode = cardEntryList.Find(target);
         Vector3 workingPosition = targetPosition;
@@ -102,7 +106,16 @@ public class CardCollection : ScriptableObject
         }
     }
 
-    public Card FindFirstByCardType(Cards cardType)
+    public void UpdateCardsHierarchies(CardEntry target)
+    {
+        List<CardEntry> cardEntries = GetAllCardsFrom(target);
+        foreach (CardEntry cardEntry in cardEntries)
+        {
+            cardEntry.transform.SetAsLastSibling();
+        }
+    }
+
+    public Card FindFirstByCardType(CardType cardType)
     {
         foreach(CardEntry cardEntry in cardEntryList)
         {
@@ -113,6 +126,22 @@ public class CardCollection : ScriptableObject
             }
         }
         throw new System.Exception("Card Type cannot find");
+    }
+
+    public List<CardEntry> GetAllCardsFrom(CardEntry cardEntry)
+    {
+        List<CardEntry> cards = new();
+        bool NeedAdd = false;
+        foreach(CardEntry card in cardEntryList)
+        {
+            if(card == cardEntry)
+                NeedAdd = true;
+
+            if (NeedAdd)
+                cards.Add(card);
+        }
+
+        return cards;
     }
 
     public CardEntry Head()

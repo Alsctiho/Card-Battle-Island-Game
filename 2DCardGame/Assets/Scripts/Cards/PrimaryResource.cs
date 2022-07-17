@@ -2,17 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PrimaryResource : MonoBehaviour
+public class PrimaryResource : Resource
 {
-    // Start is called before the first frame update
-    void Start()
+    int health;
+
+    public override void Initialize(ObjectStatus status)
     {
-        
+        if (status.health == 0)
+            throw new System.Exception("Not Update status in editor");
+
+        health = status.health;
+        UpdateHealthDisplay(health);
     }
 
-    // Update is called once per frame
-    void Update()
+    public override bool ConsumedBySpawn()
     {
-        
+        health--;
+        if(health <= 0)
+        {
+            Destroy(this.gameObject);
+            return true;
+        }
+        else
+        {
+            UpdateHealthDisplay(health);
+            return false;
+        }
     }
 }

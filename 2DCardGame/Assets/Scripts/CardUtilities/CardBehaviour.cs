@@ -4,7 +4,22 @@ using UnityEngine;
 
 public abstract class CardBehaviour: MonoBehaviour
 {
-    public abstract bool CanBeConsumedBySpawn();
+    private void Start()
+    {
+        Debug.Log("card behavior start");
+    }
 
-    public abstract void ConsumedBySpawn();
+    protected void UpdateHealthDisplay(int newHealth)
+    {
+        transform.gameObject.GetComponent<CardDisplay>().UpdateHealth(newHealth);
+    }
+
+    protected void UpdateAttackDisplay(int newAttack)
+    {
+        transform.gameObject.GetComponent<CardDisplay>().UpdateAttack(newAttack);
+    }
+
+    public abstract void Initialize(ObjectStatus status);
+
+    public abstract bool ConsumedBySpawn();
 }
